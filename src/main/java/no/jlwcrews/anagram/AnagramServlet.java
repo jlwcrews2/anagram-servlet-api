@@ -4,12 +4,14 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import tools.jackson.databind.json.JsonMapper;
 
 import java.io.IOException;
 import java.util.Arrays;
 
 public class AnagramServlet extends HttpServlet {
 
+    private final JsonMapper mapper = JsonMapper.builder().build();
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws IOException {
@@ -19,9 +21,9 @@ public class AnagramServlet extends HttpServlet {
 
     @Override
     protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        var words = Arrays.asList(req.getReader().readLine().split(", "));
-        var result = new AnagramFinder().findAnagrams(words).values();
-        resp.setContentType("text/plain");
-        resp.getWriter().println(result);
+        var wordList = mapper.readValue(req.getInputStream(), WordList.class);
+        var result = new AnagramFinder().findAnagrams(wordList.words()).values();
+        resp.setContentType("application/json");
+        resp.getWriter().println(mapper.writeValueAsString(result));
     }
 }
